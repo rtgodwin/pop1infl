@@ -21,46 +21,45 @@ hiddencounter <- function(model, data, maxpred) {
     maxpred = max(y)
   }
   
-  if(class(model) == "truncmodel" & model$dist == "Poisson") {
-    #PP
-    pred <- rep(0, maxpred)
-    for(pp in 1:(maxpred)){
-      pred[pp] <- sum((l ^ (pp)) / ((exp(l) - 1) * factorial(pp)))
-    }
-    pred
-  } else if(class(model) == "truncmodel" & model$dist == "negbin") {
-    #ZTNB
-    pred <- rep(0, maxpred)
-    for(pp in 1:(maxpred)){
-      pred[pp] <- sum((gamma(a + pp) / gamma(a) / gamma(pp + 1)) * ((1 / (1 + th)) ^ a) * ((th / (1 + th)) ^ pp) * (1 / (1 - (1 + th) ^ (-a))))
-    }
-    pred
-  } else if(class(model) == "oneinflmodel" & model$dist == "Poisson") {
-    #OIPP
-    pred <- rep(0, maxpred)
+  z <- matrix(, (maxpred + 1), 3)
+  
+  if(model$dist == "Poisson") {
+    #pred <- rep(0, maxpred)
     w <- -l * (exp(l) - l - 1) ^ -1 + (1 + l * (exp(l) - l - 1) ^ -1) * (1 + t) ^ -1
-    pred[1] <- sum(w + (1 - w) * l / (exp(l) - 1))
+    z[2,1] <- sum(w + (1 - w) * l / (exp(l) - 1))
     for(pp in 2:(maxpred)){
-      pred[pp] <- sum((1 - w) * (l ^ (pp)) / ((exp(l) - 1) * factorial(pp)))
+      z[pp+1,1] <- sum((1 - w) * (l ^ (pp)) / ((exp(l) - 1) * factorial(pp)))
     }
-    pred
-  } else if(class(model) == "oneinflmodel" & model$dist == "negbin") {
+    #z[2:maxpred+1, 1] <- pred
+    # counterfactual
+    #pred.c <- rep(0, maxpred + 1)
+    for(pp in 0:(maxpred)){
+      z[pp+1,2] <- sum((l ^ (pp)) / ((exp(l) - 1) * factorial(pp)))
+    }
+    #z[1:maxpred+1,2] <- pred.c
+  } else if(model$dist == "negbin") {
     #OIZTNB
-    pred <- rep(0, maxpred)
+    #pred <- rep(0, maxpred)
     P1 <- a * ((1 / (1 + th)) ^ a) * th / (1 + th - (1 + th) ^ (1 - a))
     L <- -P1 / (1 - P1)
     w <- L + (1 - L) / (1 + t)
-    pred[1] <- sum(w + (1 - w) * a * ((1 / (1 + th)) ^ a) * (th / (1 + th - (1 + th) ^ (1 - a))))
+    z[2,1] <- sum(w + (1 - w) * a * ((1 / (1 + th)) ^ a) * (th / (1 + th - (1 + th) ^ (1 - a))))
     for(pp in 2:(maxpred)){
-      pred[pp] <- sum((1 - w) * (gamma(a + pp) / gamma(a) / gamma(pp + 1)) * ((1 / (1 + th)) ^ a) * ((th / (1 + th)) ^ pp) * (1 / (1 - (1 + th) ^ (-a))))
+      z[pp+1,1] <- sum((1 - w) * (gamma(a + pp) / gamma(a) / gamma(pp + 1)) * ((1 / (1 + th)) ^ a) * ((th / (1 + th)) ^ pp) * (1 / (1 - (1 + th) ^ (-a))))
     } 
-    pred
-  } else if(class(model) == "basicPoisson") {
-    pred <- rep(0, maxpred)
-    for(pp in 1:(maxpred)){
-      pred[pp] <- sum((l ^ (pp-1)) / (exp(l) * factorial(pp-1)))
+    #z[2:maxpred+1,1] <- pred
+    # counterfactual
+    #pred.c <- rep(0, maxpred + 1)
+    for(pp in 0:(maxpred)){
+      z[pp+1,2] <- sum((gamma(a + pp) / gamma(a) / gamma(pp + 1)) * ((1 / (1 + th)) ^ a) * ((th / (1 + th)) ^ pp) * (1 / (1 - (1 + th) ^ (-a))))
     }
-    pred
+    #z[1:maxpred+1,2] <- pred.c
   }
+  z[2:(maxpred+1), 3] <- tabulate(y)[1:maxpred]
+  z <- as.data.frame(z)
+  rownames(z) <- c(0:maxpred)
+  colnames(z) <- c("predicted.values", "counterfactual.values","actual.values")
+  z <- z[c("actual.values", "predicted.values", "counterfactual.values")]
   
+  z
 }
