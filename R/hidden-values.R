@@ -59,7 +59,9 @@ hidden.values <- function(model, data, maxpred) {
   z <- as.data.frame(z)
   rownames(z) <- c(0:maxpred)
   colnames(z) <- c("predicted.values", "counterfactual.values","actual.values")
-  z <- z[c("actual.values", "counterfactual.values")]
+  if(class(model) == "truncmodel"){
+    z <- z[c("actual.values", "counterfactual.values")]
+  }
   if(class(model) == "oneinflmodel"){
     z <- z[c("actual.values", "predicted.values", "counterfactual.values")]
   }
