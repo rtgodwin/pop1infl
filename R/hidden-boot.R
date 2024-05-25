@@ -10,7 +10,10 @@ hidden.boot <- function(model, data, maxpred, bootsize = 1000, bootseed = 1) {
   data <- data[, all.vars(formula), drop = FALSE]
   cleandata <- makeXZy(formula, data)
   X <- cleandata$X
-  Z <- cleandata$Z
+  
+  if(class(model) == "oneinflmodel"){
+    Z <- cleandata$Z
+  }
   
   set.seed(bootseed)
   boots <- matrix(, bootsize, maxpred + 1)
