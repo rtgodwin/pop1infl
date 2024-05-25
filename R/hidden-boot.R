@@ -19,7 +19,7 @@ hidden.boot <- function(model, data, maxpred, bootsize = 1000, bootseed = 1) {
     for(i in 1:bootsize) {
       data[[all.vars(formula)[1]]] <- roipp(b, g, X, Z)
       modboot <- oneinfl(formula = formula, data = data, dist = "Poisson")
-      boots[i, ] <- hiddencounter(model = modboot, data = data, maxpred = maxpred)$counterfactual.values
+      boots[i, ] <- hidden.values(model = modboot, data = data, maxpred = maxpred)$counterfactual.values
     }
   }
   
