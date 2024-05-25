@@ -6,11 +6,13 @@ hidden.values <- function(model, data, maxpred) {
   formula <- model$formula
   cleandata <- makeXZy(formula, data)
   X <- cleandata$X
-  Z <- cleandata$Z
   y <- cleandata$y
   
   l <- exp(X %*% b)
-  t <- exp(-Z %*% g)
+  if(class(model) == "oneinflmodel"){
+    Z <- cleandata$Z
+    t <- exp(-Z %*% g)
+  }
   
   if (model$dist == "negbin") {
     a <- model$alpha
@@ -24,22 +26,20 @@ hidden.values <- function(model, data, maxpred) {
   z <- matrix(, (maxpred + 1), 3)
   
   if(model$dist == "Poisson") {
-    #pred <- rep(0, maxpred)
-    w <- -l * (exp(l) - l - 1) ^ -1 + (1 + l * (exp(l) - l - 1) ^ -1) * (1 + t) ^ -1
-    z[2,1] <- sum(w + (1 - w) * l / (exp(l) - 1))
-    for(pp in 2:(maxpred)){
-      z[pp+1,1] <- sum((1 - w) * (l ^ (pp)) / ((exp(l) - 1) * factorial(pp)))
+    if(class(model) == "oneinflmodel"){
+      w <- -l * (exp(l) - l - 1) ^ -1 + (1 + l * (exp(l) - l - 1) ^ -1) * (1 + t) ^ -1
+      z[2,1] <- sum(w + (1 - w) * l / (exp(l) - 1))
+      for(pp in 2:(maxpred)){
+        z[pp+1,1] <- sum((1 - w) * (l ^ (pp)) / ((exp(l) - 1) * factorial(pp)))
+      }
     }
-    #z[2:maxpred+1, 1] <- pred
-    # counterfactual
-    #pred.c <- rep(0, maxpred + 1)
+
     for(pp in 0:(maxpred)){
       z[pp+1,2] <- sum((l ^ (pp)) / ((exp(l) - 1) * factorial(pp)))
     }
-    #z[1:maxpred+1,2] <- pred.c
+    
   } else if(model$dist == "negbin") {
-    #OIZTNB
-    #pred <- rep(0, maxpred)
+
     P1 <- a * ((1 / (1 + th)) ^ a) * th / (1 + th - (1 + th) ^ (1 - a))
     L <- -P1 / (1 - P1)
     w <- L + (1 - L) / (1 + t)
@@ -59,7 +59,9 @@ hidden.values <- function(model, data, maxpred) {
   z <- as.data.frame(z)
   rownames(z) <- c(0:maxpred)
   colnames(z) <- c("predicted.values", "counterfactual.values","actual.values")
-  z <- z[c("actual.values", "predicted.values", "counterfactual.values")]
-  
+  z <- z[c("actual.values", "counterfactual.values")]
+  if(class(model) == "oneinflmodel"){
+    z <- z[c("actual.values", "predicted.values", "counterfactual.values")]
+  }
   z
 }
