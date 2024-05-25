@@ -5,7 +5,7 @@ Version: 0.1.0
 Author: Ryan T. Godwin
 Maintainer: Ryan T. Godwin <ryan.godwin@umanitoba.ca>
 Description: Estimates zero-truncated one-inflated Poisson and negative binomial models. The models are then used 
-to uncover a "counterfactual" distribution where one-inflation has been undone. The counterfactual distribution 
+to uncover a hideen counterfactual distribution where one-inflation has been undone and invisible members are revealed. This counterfactual distribution 
 is then used to estimate the size, and characterisitcs, of the hidden members of the population.
 License: MIT
 Encoding: UTF-8
