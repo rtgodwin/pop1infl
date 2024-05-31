@@ -1,4 +1,4 @@
-group.boot <- function(model, data, bootsize = 1000, bootseed = 1) {
+boot.group <- function(model, data, bootsize = 1000, bootseed = 1) {
   
   q <- list()
   
