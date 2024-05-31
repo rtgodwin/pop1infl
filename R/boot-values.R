@@ -1,4 +1,4 @@
-hidden.boot <- function(model, data, maxpred, bootsize = 1000, bootseed = 1) {
+boot.values <- function(model, data, maxpred, bootsize = 1000, bootseed = 1) {
   
   q <- list()
   
