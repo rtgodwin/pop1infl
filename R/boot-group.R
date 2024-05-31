@@ -20,7 +20,7 @@ boot.group <- function(model, data, bootsize = 1000, bootseed = 1) {
   
   if (model$dist == "Poisson") {
     for(i in 1:bootsize) {
-      data$y <- roipp(b, g, X, Z)
+      data[[all.vars(formula)[1]]] <- roipp(b, g, X, Z)
       modboot <- oneinfl(formula = formula, data = data, dist = "Poisson")
       boots[i, ] <- hidden.groups(model = modboot, data = data)
     }
