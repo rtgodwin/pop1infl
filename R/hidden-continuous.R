@@ -21,9 +21,23 @@ hidden.continuous <- function(model, data) {
   }
   data[[all.vars(formula)[1]]] <- evs
   
-  # determine which variables are continuous or counts
-  check.num.int <- function(X) {is.numeric(X) || is.integer(X)}
-  numbers <- names(data)[sapply(data, check.num.int)]
+  # get only the X variables
+  if(any(grepl("\\|", formula))) {
+    lhs_formula <- strsplit(formula, "|", fixed = TRUE)[[1]][1]
+    lhs_vars <- all.vars(as.formula(lhs_formula))
+  } else
+  {
+    lhs_vars <- all.vars(formula[[3]])
+  }  
+  
+  # Identify continuous or integer variables but not factors or binary
+  continuous_or_integer_vars <- sapply(lhs_vars, function(var) {
+    is.numeric(data[[var]]) && 
+      !(is.factor(data[[var]]) || all(data[[var]] %in% c(0, 1)))
+  })
+  
+  # Filter the variables
+  numbers <- lhs_vars[continuous_or_integer_vars]
   
   # Check if there is a pipe in the formula
   original_formula <- deparse(formula)
