@@ -69,14 +69,21 @@ hidden.continuous <- function(model, data) {
   # Filter out NULL entries if any
   new_formulas <- Filter(Negate(is.null), new_formulas)
   
+  # This code is specifically for the farm submissions data. Needs to be generalized to any model.
+  size.mod <- lm(formula = new_formulas[[1]], data = data)
+  dist.mod <- lm(formula = new_formulas[[2]], data = data)
+  dairy.hat <- hidden.groups(model, data)[1,2] / (hidden.groups(model, data)[1,1] + hidden.groups(model, data)[1,2])
+  q[[numbers[1]]] <- as.numeric(size.mod$coefficients[1] + size.mod$coefficients[3] * dist.mod$coefficients[1] + (size.mod$coefficients[3] * dist.mod$coefficients[4] + size.mod$coefficients[4]) * dairy.hat)
+  q[[numbers[2]]] <- as.numeric(dist.mod$coefficients[1] + dist.mod$coefficients[3] * size.mod$coefficients[1] + (dist.mod$coefficients[3] * size.mod$coefficients[4] + dist.mod$coefficients[4]) * dairy.hat)
+  
   # weight the predicted values by the probability that each observation generates a 0
-  weights <- (1 / (exp(l) - 1)) / sum(1 / (exp(l) - 1))
+  #weights <- (1 / (exp(l) - 1)) / sum(1 / (exp(l) - 1))
   
   # estimate the linear equations and get weighted predicted values
-  for(i in 1:length(new_formulas)) {
-    modlm <- lm(formula = new_formulas[[i]], data = data)
-    q[[numbers[i]]] <-  sum(predict(modlm) * weights)
-  }
+  #for(i in 1:length(new_formulas)) {
+  #  modlm <- lm(formula = new_formulas[[i]], data = data)
+  #  q[[numbers[i]]] <-  sum(predict(modlm) * weights)
+  #}
   
   q
 }
